@@ -1,6 +1,7 @@
 import {Command, flags} from '@oclif/command'
-const opn = require('opn')
-const gitRemoteOriginUrl = require('git-remote-origin-url');
+import opn = require('opn')
+import * as git from 'nodegit' 
+
 
 export default class Open extends Command {
   static description = 'Open repository in bitbucket'
@@ -13,8 +14,8 @@ open world from ./src/open.ts!
 
   static flags = {
     help: flags.help({char: 'h'}),
-    path: flags.string({char: 'p', description: 'path to project'}),
-    server: flags.string({char: 's', description: 'bitbucket server'}),
+    path: flags.string({char: 'p', description: 'path to project', required: true}),
+    server: flags.string({char: 's', description: 'bitbucket server', required: true}),
   }
 
   static args = [{name: 'file'}]
@@ -24,11 +25,17 @@ open world from ./src/open.ts!
     const server = flags.server
     const path = flags.path
 
-    gitRemoteOriginUrl(path).then((url: string) => {
-      const matches = url.match(/(ssh|http|https):\/\/.*\/(.*)\/(.*).git/)
+    const repository = git.Repository.open(path)
+
+    const url = await repository.then((repository: any) => {
+      return repository.config()
+    }).then((config: git.Config) => {
+      return config.getStringBuf('remote.origin.url')
+    }).then((url: git.Buf) => {
+      const matches = url.toString().match(/(ssh|http|https):\/\/.*\/(.*)\/(.*).git/)
 
       if(!matches) {
-        throw Error(`Unable to parse repository path ${path}`)
+        throw Error(`Unable to parse repository path ${url}`)
       }
 
       const project = matches[2]
@@ -37,9 +44,10 @@ open world from ./src/open.ts!
 
       return projectUrl
     }).then((url: string) => {
-      return opn(url, { wait: false })
-    }).catch((error: any) => {
-      console.log(`${error}`)
+      opn(url, {wait: false})
+    }).catch((reason: any) => {
+      console.log(`${reason}`)
     });
+
   }
 }

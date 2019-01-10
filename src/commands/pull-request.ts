@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 const opn = require('opn')
-const git = require('nodegit')
+import * as git from 'nodegit' 
 
 export default class PullRequest extends Command {
   static description = 'Open repository in bitbucket'
@@ -52,21 +52,21 @@ open world from ./src/open.ts!
   async run() {
     const {args, flags} = this.parse(PullRequest)
     const server = flags.server
-    const path = flags.path
+    const path = flags.path || 'none'
 
     const repository = git.Repository.open(path)
 
-    const url = await repository.then(repository => {
+    const url = await repository.then((repository: any) => {
       return repository.config()
-    }).then(config => {
+    }).then((config: git.Config) => {
       return config.getStringBuf('remote.origin.url')
-    }).then(url => {
+    }).then((url: git.Buf) => {
       return url
     });
 
-    const reference = await repository.then(repository => {
+    const reference = await repository.then((repository: git.Repository) => {
       return repository.getCurrentBranch()
-    }).then(reference => {
+    }).then((reference: git.Reference) => {
       return reference.shorthand()
     });
 

@@ -19,7 +19,7 @@ $ npm install -g bitbucket-cli
 $ bitbucket-cli COMMAND
 running command...
 $ bitbucket-cli (-v|--version|version)
-bitbucket-cli/0.0.1 darwin-x64 node-v10.11.0
+bitbucket-cli/0.0.1 darwin-x64 node-v11.3.0
 $ bitbucket-cli --help [COMMAND]
 USAGE
   $ bitbucket-cli COMMAND
@@ -30,6 +30,8 @@ USAGE
 <!-- commands -->
 * [`bitbucket-cli hello [FILE]`](#bitbucket-cli-hello-file)
 * [`bitbucket-cli help [COMMAND]`](#bitbucket-cli-help-command)
+* [`bitbucket-cli open [FILE]`](#bitbucket-cli-open-file)
+* [`bitbucket-cli pull-request [FILE]`](#bitbucket-cli-pull-request-file)
 
 ## `bitbucket-cli hello [FILE]`
 
@@ -67,4 +69,44 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.3/src/commands/help.ts)_
+
+## `bitbucket-cli open [FILE]`
+
+Open repository in bitbucket
+
+```
+USAGE
+  $ bitbucket-cli open [FILE]
+
+OPTIONS
+  -h, --help           show CLI help
+  -p, --path=path      path to project
+  -s, --server=server  bitbucket server
+
+EXAMPLE
+  $ bitbucket-cli open
+  open world from ./src/open.ts!
+```
+
+_See code: [src/commands/open.ts](https://github.com/cod3hulk/bitbucket-cli/blob/v0.0.1/src/commands/open.ts)_
+
+## `bitbucket-cli pull-request [FILE]`
+
+Open repository in bitbucket
+
+```
+USAGE
+  $ bitbucket-cli pull-request [FILE]
+
+OPTIONS
+  -h, --help           show CLI help
+  -p, --path=path      path to project
+  -s, --server=server  bitbucket server
+
+EXAMPLE
+  $ bitbucket-cli open
+  open world from ./src/open.ts!
+```
+
+_See code: [src/commands/pull-request.ts](https://github.com/cod3hulk/bitbucket-cli/blob/v0.0.1/src/commands/pull-request.ts)_
 <!-- commandsstop -->

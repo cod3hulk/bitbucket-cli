@@ -24,12 +24,22 @@ open world from ./src/open.ts!
     const server = flags.server
     const path = flags.path
 
-    gitRemoteOriginUrl(path).then(url => {
-        const matches = url.match(/ssh:\/\/git@.*\/(.*)\/(.*).git/)
-        const project = matches[1]
-        const repository = matches[2]
-        const projectUrl = `${server}/projects/${project}/repos/${repository}/browse`
-        opn(projectUrl, { wait: false })
-    }).catch(error => {console.log(error)});
+    gitRemoteOriginUrl(path).then((url: string) => {
+      const matches = url.match(/(ssh|http|https):\/\/.*\/(.*)\/(.*).git/)
+
+      if(!matches) {
+        throw Error(`Unable to parse repository path ${path}`)
+      }
+
+      const project = matches[2]
+      const repository = matches[3]
+      const projectUrl = `${server}/projects/${project}/repos/${repository}/browse`
+
+      return projectUrl
+    }).then((url: string) => {
+      return opn(url, { wait: false })
+    }).catch((error: any) => {
+      console.log(`${error}`)
+    });
   }
 }

@@ -1,6 +1,6 @@
 import {Command, flags} from '@oclif/command'
 const opn = require('opn')
-const gitRemoteOriginUrl = require('git-remote-origin-url');
+const git = require('nodegit')
 
 export default class PullRequest extends Command {
   static description = 'Open repository in bitbucket'
@@ -54,7 +54,23 @@ open world from ./src/open.ts!
     const server = flags.server
     const path = flags.path
 
-    console.log(this.createPullRequest())
+    const repository = git.Repository.open(path)
 
+    const url = await repository.then(repository => {
+      return repository.config()
+    }).then(config => {
+      return config.getStringBuf('remote.origin.url')
+    }).then(url => {
+      return url
+    });
+
+    const reference = await repository.then(repository => {
+      return repository.getCurrentBranch()
+    }).then(reference => {
+      return reference.shorthand()
+    });
+
+    console.log(url)
+    console.log(reference)
   }
 }

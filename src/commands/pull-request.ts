@@ -1,6 +1,7 @@
 import {Command, flags} from '@oclif/command'
 const opn = require('opn')
 import * as git from 'nodegit' 
+const axios = require('axios')
 
 export default class PullRequest extends Command {
   static description = 'Open repository in bitbucket'
@@ -13,19 +14,27 @@ open world from ./src/open.ts!
 
   static flags = {
     help: flags.help({char: 'h'}),
-    path: flags.string({char: 'p', description: 'path to project'}),
+    username: flags.string({char: 'u', description: 'username'}),
+    password: flags.string({char: 'p', description: 'password'}),
+    reviewers: flags.string({char: 'r', description: 'reviewers'}),
+    path: flags.string({char: 'f', description: 'path to project'}),
     server: flags.string({char: 's', description: 'bitbucket server'}),
   }
 
   static args = [{name: 'file'}]
 
-  createPullRequest() : object {
+  createPullRequest(
+    branch: String,
+    repository: String,
+    project: String,
+    reviewers: Object
+  ) : object {
     const fromRef = {
-      'id': 'branch',
+      'id': branch,
       'repository': {
-        'slug': 'repository',
+        'slug': repository,
         'project': {
-          'key': 'project'
+          'key': project
         }
       }
     }
@@ -33,9 +42,9 @@ open world from ./src/open.ts!
     const toRef = {
       'id': 'master',
       'repository': {
-        'slug': 'repository',
+        'slug': repository,
         'project': {
-          'key': 'project'
+          'key': project  
         }
       }
     }
@@ -45,7 +54,7 @@ open world from ./src/open.ts!
       'description': 'description',
       'fromRef': fromRef,
       'toRef': toRef,
-      'reviewers': 'reviewers'
+      'reviewers': reviewers
     }
   }
 
@@ -53,6 +62,9 @@ open world from ./src/open.ts!
     const {args, flags} = this.parse(PullRequest)
     const server = flags.server
     const path = flags.path || 'none'
+    const username = flags.username
+    const password = flags.password
+    const reviewers = (flags.reviewers || '').split(',').map(function (n) { return { user: {name: n} } })
 
     const repository = git.Repository.open(path)
 
@@ -70,7 +82,38 @@ open world from ./src/open.ts!
       return reference.shorthand()
     });
 
-    console.log(url)
-    console.log(reference)
+    const regex = /.*\/(.*)\/(.*)\.git/g
+    const matches = regex.exec(String(url))
+    const project = matches[1]
+    const repo = matches[2]
+    const repoInfo = {
+      'project': project,
+      'repository': repo,
+      'branch': reference
+    }
+
+    const pullRequest = this.createPullRequest(
+      repoInfo.branch,
+      repoInfo.repository,
+      repoInfo.project,
+      reviewers
+    )
+
+    const pullRequestUrl =`${server}/${repoInfo.project}/repos/${repoInfo.repository}/pull-requests`
+
+    axios.post(pullRequestUrl, pullRequest, {
+      auth: {
+        username: username,
+        password: password
+      }
+    }).then( (response) => {
+      if (response.status != 201) {
+        console.log(`Error creating PR: ${response.data}`)
+      } else {
+        console.log('PR created!')
+      }
+    }).catch( (error) => {
+       console.log(`Error creating PR: ${error.response.data.errors[0].message}`)
+    })
   }
 }

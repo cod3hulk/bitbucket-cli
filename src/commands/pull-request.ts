@@ -1,4 +1,5 @@
 import {Command, flags} from '@oclif/command'
+import cli from 'cli-ux'
 const opn = require('opn')
 import * as git from 'nodegit' 
 const axios = require('axios')
@@ -27,7 +28,8 @@ open world from ./src/open.ts!
     branch: String,
     repository: String,
     project: String,
-    reviewers: Object
+    reviewers: Object,
+    description: String
   ) : object {
     const fromRef = {
       'id': branch,
@@ -51,7 +53,7 @@ open world from ./src/open.ts!
 
     return {
       'title': fromRef.id,
-      'description': 'description',
+      'description': description,
       'fromRef': fromRef,
       'toRef': toRef,
       'reviewers': reviewers
@@ -65,6 +67,7 @@ open world from ./src/open.ts!
     const username = flags.username
     const password = flags.password
     const reviewers = (flags.reviewers || '').split(',').map(function (n) { return { user: {name: n} } })
+    const description = await cli.prompt('Please enter a description')
 
     const repository = git.Repository.open(path)
 
@@ -96,7 +99,8 @@ open world from ./src/open.ts!
       repoInfo.branch,
       repoInfo.repository,
       repoInfo.project,
-      reviewers
+      reviewers,
+      description
     )
 
     const pullRequestUrl =`${server}/${repoInfo.project}/repos/${repoInfo.repository}/pull-requests`
